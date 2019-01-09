@@ -26,3 +26,60 @@ services:
       - snipe
     volumes:
       - snipe_html:/var/www/html
+
+  snipedb:
+    container_name: snipedb
+    image: mariadb:10.3.8-bionic
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${SNIPE_DB}
+      MYSQL_USER: ${SNIPE_DB_USER}
+      MYSQL_PASSWORD: ${SNIPE_DB_PASS}
+    networks:
+      - snipe
+    volumes:
+      - ./snipedb/sql/:/docker-entrypoint-initdb.d/:ro
+      - snipe_mysql:/var/lib/mysql
+
+  nginx:
+    container_name: nginx
+    build:
+      context: nginx/
+      args:
+        HTTP_PORT: ${NGINX_HTTP_PORT}
+        HTTPS_PORT: ${NGINX_HTTPS_PORT}
+        DNS_NAME: ${DNS_NAME}
+    restart: unless-stopped
+    volumes:
+      - ./opt/:/etc/nginx/certs:ro
+      - snipehtml:/var/www/html
+    ports:
+      - ${NGINX_HTTP_PORT}:${NGINX_HTTP_PORT}
+      - ${NGINX_HTTPS_PORT}:${NGINX_HTTPS_PORT}
+    networks:
+      - snipe
+    depends_on:
+      - php
+      - snipedb
+
+  php:
+    container_name: php
+    build:
+      context: php/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - snipe
+    links:
+      - snipedb
+    volumes:
+      - snipehtml:/var/www/html
+    environment:
+      APP_URL: https://${DNS_NAME}/
+      DB_CONNECTION: mysql
+      DB_HOST: snipedb
+      DB_PORT: 3306
+      DB_DATABASE: ${SNIPE_DB}
+      DB_USERNAME: ${SNIPE_DB_USER}
+      DB_PASSWORD: ${SNIPE_DB_PASS}
