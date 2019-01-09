@@ -74,7 +74,7 @@ services:
     links:
       - snipedb
     volumes:
-      - snipehtml:/var/www/html
+      - snipe_html:/var/www/html
     environment:
       APP_URL: https://${DNS_NAME}/
       DB_CONNECTION: mysql
