@@ -53,7 +53,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./opt/:/etc/nginx/certs:ro
-      - snipehtml:/var/www/html
+      - snipe_html:/var/www/html
     ports:
       - ${NGINX_HTTP_PORT}:${NGINX_HTTP_PORT}
       - ${NGINX_HTTPS_PORT}:${NGINX_HTTPS_PORT}
