@@ -1,0 +1,28 @@
+version: '2'
+networks:
+  snipe:
+    driver: bridge
+
+volumes:
+  snipe_mysql:
+  snipe_html:
+
+services:
+#===============================================================================#
+# Snipe-IT                                                                      #
+# This container simply builds the Laravel application and stores it in the     #
+# snipe_html docker volume, so the Nginx and PHP containers can access it       #
+#===============================================================================#
+  snipe:
+    container_name: snipeit
+    build:
+      context: snipe/
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${SNIPE_DB}
+      MYSQL_USER: ${SNIPE_DB_USER}
+      MYSQL_PASSWORD: ${SNIPE_DB_PASS}
+    networks:
+      - snipe
+    volumes:
+      - snipe_html:/var/www/html
