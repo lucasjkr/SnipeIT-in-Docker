@@ -1,5 +1,6 @@
 FROM ubuntu:18.04
-
+# Copy env file into the container
+COPY config/snipe.env /root/.env
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     		apt-transport-https ca-certificates \
@@ -30,11 +31,10 @@ RUN apt-get update \
     && php -r "unlink('composer-setup.php');" \
 # Remove default HTML directory
     && rm -rf /var/www/html \
-    && git clone https://github.com/lucasjkr/snipe-it.git html
-
-WORKDIR /var/www/html
-COPY config/snipe.env .env
-RUN git checkout master \
+    && git clone https://github.com/lucasjkr/snipe-it.git /var/www/html \
+# Change to Snipe repository and continue building
+    && cd  /var/www/html \
+    && git checkout master \
     && composer install \
     && rm -rf /root/.composer/cache/* \
 # Make required directories writable
@@ -47,6 +47,7 @@ RUN git checkout master \
 # Creating APP_KEY fails currently, because the .env file says the site is in production
 # looking for a solution that would generate the APP_KEY only if it's not set, regardless
 # of what is set in APP_ENV
+    && mv /root/.env /var/www/html/.env \
     && php artisan key:generate \
     && php artisan optimize \
-    && echo "Completed installation, exiting so that Nginx and PHP-FPM can take over"
+    && echo "Snipe has been built! Just copying in new .env file now..."
