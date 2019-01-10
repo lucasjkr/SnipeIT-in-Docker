@@ -2,3 +2,5 @@
 .idea/*
 opt/nginx-key.key
 opt/nginx-key.pem
+.env
+opt/nginx-cert.pem
