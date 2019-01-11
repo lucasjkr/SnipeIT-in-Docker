@@ -1,6 +1,7 @@
 FROM php:7.2-fpm
 
 # Update packages and install composer and PHP dependencies.
+# including MySQL client (needed so that mysqldump can be installed)
 RUN apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libpq-dev \
@@ -8,6 +9,7 @@ RUN apt-get update && \
     libjpeg62-turbo-dev \
     libmcrypt-dev \
     libbz2-dev \
+    mariadb-client \
     cron \
     && pecl channel-update pecl.php.net \
     && pecl install apcu \
