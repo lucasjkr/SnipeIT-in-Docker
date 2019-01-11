@@ -49,5 +49,4 @@ RUN apt-get update \
 # of what is set in APP_ENV
     && mv /root/.env /var/www/html/.env \
     && php artisan key:generate \
-    && php artisan optimize \
-    && echo "Snipe has been built! Just copying in new .env file now..."
+    && php artisan optimize
