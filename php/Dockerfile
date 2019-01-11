@@ -7,7 +7,6 @@ RUN apt-get update && \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
     libmcrypt-dev \
-#    libpng12-dev \
     libbz2-dev \
     cron \
     && pecl channel-update pecl.php.net \
@@ -17,6 +16,7 @@ RUN apt-get update && \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install gd \
     && docker-php-ext-install bcmath \
+    && docker-php-ext-install zip \
 # Memory Limit
     && echo "memory_limit=2048M" > $PHP_INI_DIR/conf.d/memory-limit.ini \
     && echo "max_execution_time=900" >> $PHP_INI_DIR/conf.d/memory-limit.ini \
