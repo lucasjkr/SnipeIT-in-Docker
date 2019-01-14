@@ -3,22 +3,10 @@ FROM ubuntu:18.04
 COPY config/snipe.env /root/.env
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-    		apt-transport-https ca-certificates \
-    		pwgen \
-    		tzdata \
+         apt-transport-https ca-certificates pwgen tzdata \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-            php7.2 \
-            php7.2-curl \
-            php7.2-common \
-            php7.2-cli \
-            php7.2-mysql \
-            php7.2-mbstring \
-            php7.2-xml \
-            php7.2-zip \
-            php7.2-bcmath \
-            php7.2-gd \
-            git \
+         git php7.2 php7.2-curl php7.2-common php7.2-cli php7.2-mysql php7.2-mbstring php7.2-xml php7.2-zip php7.2-bcmath php7.2-gd \
 # Cleanup apt directories
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
