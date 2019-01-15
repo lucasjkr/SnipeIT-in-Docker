@@ -6,6 +6,7 @@ networks:
 volumes:
   snipe_mysql:
   snipe_html:
+  portainer_data:
 
 services:
 #===============================================================================#
@@ -83,3 +84,20 @@ services:
       DB_DATABASE: ${SNIPE_DB}
       DB_USERNAME: ${SNIPE_DB_USER}
       DB_PASSWORD: ${SNIPE_DB_PASS}
+
+#===============================================================================#
+# Portainer Container Management Application                                    #
+#===============================================================================#
+  portainer:
+    image: portainer/portainer
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+#    command: -H unix:///var/run/docker.sock
+    command: --admin-password "$$2y$$05$$arC5e4UbRPxfR68jaFnAAe1aL7C1U03pqfyQh49/9lB9lqFxLfBqS"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - snipe
