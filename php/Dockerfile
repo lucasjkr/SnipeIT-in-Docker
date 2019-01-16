@@ -11,6 +11,7 @@ RUN apt-get update && \
     libbz2-dev \
     mariadb-client \
     cron \
+    git \
     && pecl channel-update pecl.php.net \
     && pecl install apcu \
 # PHP Extensions
