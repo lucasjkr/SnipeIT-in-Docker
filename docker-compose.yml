@@ -104,7 +104,7 @@ services:
       - portainer_data:/data
     networks:
       - snipe
-      -
+
   phpmyadmin:
     container_name: phpmyadmin
     build:
