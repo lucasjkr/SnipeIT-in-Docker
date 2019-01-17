@@ -1,7 +1,8 @@
 FROM ubuntu:18.04
-RUN apt-get update \
+RUN DEBIAN_FRONTEND=noninteractive \
+    && apt-get update \
     && apt-get install -y --no-install-recommends \
-         apt-transport-https ca-certificates pwgen tzdata git\
+         apt-transport-https ca-certificates pwgen tzdata git \
 # Cleanup apt directories
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
