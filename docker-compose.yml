@@ -6,6 +6,7 @@ networks:
 volumes:
   snipe_mysql:
   snipe_html:
+  phpmyadmin_html:
   portainer_data:
 
 services:
@@ -55,6 +56,7 @@ services:
     volumes:
       - ./opt/:/etc/nginx/certs:ro
       - snipe_html:/var/www/html
+      - snipe_html:/var/www/phpmyadmin/html
     ports:
       - ${NGINX_HTTP_PORT}:${NGINX_HTTP_PORT}
       - ${NGINX_HTTPS_PORT}:${NGINX_HTTPS_PORT}
@@ -76,6 +78,7 @@ services:
       - snipedb
     volumes:
       - snipe_html:/var/www/html
+      - snipe_html:/var/www/phpmyadmin/html
     environment:
       APP_URL: https://${DNS_NAME}/
       DB_CONNECTION: mysql
@@ -101,3 +104,12 @@ services:
       - portainer_data:/data
     networks:
       - snipe
+      -
+  phpmyadmin:
+    container_name: phpmyadmin
+    build:
+      context: phpmyadmin/
+    volumes:
+      - phpmyadmin_html:/var/www/html
+    links:
+      - snipedb
