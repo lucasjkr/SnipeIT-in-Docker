@@ -6,7 +6,7 @@ networks:
 volumes:
   snipe_mysql:
   snipe_html:
-  phpmyadmin_html:
+  phpmyadmin_data:
   portainer_data:
 
 services:
@@ -56,7 +56,6 @@ services:
     volumes:
       - ./opt/:/etc/nginx/certs:ro
       - snipe_html:/var/www/html
-      - snipe_html:/var/www/phpmyadmin/html
     ports:
       - ${NGINX_HTTP_PORT}:${NGINX_HTTP_PORT}
       - ${NGINX_HTTPS_PORT}:${NGINX_HTTPS_PORT}
@@ -78,7 +77,6 @@ services:
       - snipedb
     volumes:
       - snipe_html:/var/www/html
-      - snipe_html:/var/www/phpmyadmin/html
     environment:
       APP_URL: https://${DNS_NAME}/
       DB_CONNECTION: mysql
@@ -89,7 +87,7 @@ services:
       DB_PASSWORD: ${SNIPE_DB_PASS}
 
 #===============================================================================#
-# Portainer Container Management Application                                    #
+# Container Management Application                                              #
 #===============================================================================#
   portainer:
     image: portainer/portainer
@@ -97,8 +95,8 @@ services:
     restart: unless-stopped
     ports:
       - "9000:9000"
-#    command: -H unix:///var/run/docker.sock
-    command: --admin-password "$$2y$$05$$arC5e4UbRPxfR68jaFnAAe1aL7C1U03pqfyQh49/9lB9lqFxLfBqS"
+    command: -H unix:///var/run/docker.sock
+#    command: --admin-password "$$2y$$05$$arC5e4UbRPxfR68jaFnAAe1aL7C1U03pqfyQh49/9lB9lqFxLfBqS"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
@@ -106,10 +104,21 @@ services:
       - snipe
 
   phpmyadmin:
-    container_name: phpmyadmin
-    build:
-      context: phpmyadmin/
-    volumes:
-      - phpmyadmin_html:/var/www/html
-    links:
-      - snipedb
+      image: phpmyadmin/phpmyadmin
+      container_name: phpmyadmin
+      environment:
+        - PMA_ARBITRARY=0
+        - PMA_HOST=snipedb
+#        - PMA_PORT=3306
+#        - PMA_USER=${SNIPE_DB_USER}
+#        - PMA_PASSWORD=${SNIP_DB_PASS}
+      depends_on:
+        - snipedb
+      restart: always
+      networks:
+        - snipe
+      ports:
+        - 8080:80
+      volumes:
+        - phpmyadmin_data:/sessions
+        - .phpmyadmin/config.inc.php:/var/www/html/config.inc.php:ro
