@@ -121,4 +121,4 @@ services:
         - 8080:80
       volumes:
         - phpmyadmin_data:/sessions
-        - .phpmyadmin/config.inc.php:/var/www/html/config.inc.php:ro
+        - ./phpmyadmin/config.inc.php:/var/www/html/config.inc.php:ro
