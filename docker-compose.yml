@@ -6,7 +6,7 @@ networks:
 volumes:
   snipe_mysql:
   snipe_html:
-  phpmyadmin_data:
+  phpmyadmin_html:
   portainer_data:
 
 services:
@@ -29,6 +29,9 @@ services:
     volumes:
       - snipe_html:/var/www/html
 
+#===============================================================================#
+# MariaDB                                                                       #
+#===============================================================================#
   snipedb:
     container_name: snipedb
     image: mariadb:10.3.8-bionic
@@ -44,6 +47,10 @@ services:
       - ./snipedb/sql/:/docker-entrypoint-initdb.d/:ro
       - snipe_mysql:/var/lib/mysql
 
+#===============================================================================#
+# NGinx to serve the snipe website at https://yourhost/                         #
+# and phpmyadmin at https://yourhost/pma                                        #
+#===============================================================================#
   nginx:
     container_name: nginx
     build:
@@ -56,6 +63,7 @@ services:
     volumes:
       - ./opt/:/etc/nginx/certs:ro
       - snipe_html:/var/www/html
+      - phpmyadmin_html:/var/www/phpmyadmin
     ports:
       - ${NGINX_HTTP_PORT}:${NGINX_HTTP_PORT}
       - ${NGINX_HTTPS_PORT}:${NGINX_HTTPS_PORT}
@@ -77,6 +85,7 @@ services:
       - snipedb
     volumes:
       - snipe_html:/var/www/html
+      - phpmyadmin_html:/var/www/phpmyadmin:ro
     environment:
       APP_URL: https://${DNS_NAME}/
       DB_CONNECTION: mysql
@@ -103,22 +112,15 @@ services:
     networks:
       - snipe
 
+#===============================================================================#
+# PHPMyAdmin Build Container                                                    #
+# This container runs once just to download and install phpmyadmin and its      #
+# dependencies - it can be combined with the snipe container eventually         #
+#===============================================================================#
   phpmyadmin:
-      image: phpmyadmin/phpmyadmin
       container_name: phpmyadmin
-      environment:
-        - PMA_ARBITRARY=0
-        - PMA_HOST=snipedb
-#        - PMA_PORT=3306
-#        - PMA_USER=${SNIPE_DB_USER}
-#        - PMA_PASSWORD=${SNIP_DB_PASS}
-      depends_on:
-        - snipedb
-      restart: always
-      networks:
-        - snipe
-      ports:
-        - 8080:80
+      build:
+        context: phpmyadmin/
+        dockerfile: Dockerfile
       volumes:
-        - phpmyadmin_data:/sessions
-        - ./phpmyadmin/config.inc.php:/var/www/html/config.inc.php:ro
+        - phpmyadmin_html:/var/www/phpmyadmin:ro
