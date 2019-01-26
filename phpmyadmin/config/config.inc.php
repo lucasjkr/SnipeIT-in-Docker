@@ -27,8 +27,10 @@ $i = 0;
 $i++;
 /* Authentication type */
 $cfg['Servers'][$i]['auth_type'] = 'cookie';
+
 /* Server parameters */
-$cfg['Servers'][$i]['host'] = 'snipedb';
+$cfg['Servers'][$i]['host'] = 'localhost';   # change to 'snipedb' if you want to connect over TCP instead of socket
+$cfg['Servers'][$i]['socket'] = '/var/run/mysqld/mysqld.sock';
 $cfg['Servers'][$i]['compress'] = false;
 $cfg['Servers'][$i]['AllowNoPassword'] = false;
 

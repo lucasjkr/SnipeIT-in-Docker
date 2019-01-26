@@ -8,6 +8,7 @@ volumes:
   snipe_html:
   phpmyadmin_html:
   portainer_data:
+  mysql_socket:
 
 services:
 #===============================================================================#
@@ -45,6 +46,7 @@ services:
       - snipe
     volumes:
       - ./snipedb/sql/:/docker-entrypoint-initdb.d/:ro
+      - mysql_socket:/var/run/mysqld
       - snipe_mysql:/var/lib/mysql
 
 #===============================================================================#
@@ -86,6 +88,7 @@ services:
     volumes:
       - snipe_html:/var/www/html
       - phpmyadmin_html:/var/www/phpmyadmin:ro
+      - mysql_socket:/var/run/mysqld
     environment:
       APP_URL: https://${DNS_NAME}/
       DB_CONNECTION: mysql
@@ -123,4 +126,4 @@ services:
         context: phpmyadmin/
         dockerfile: Dockerfile
       volumes:
-        - phpmyadmin_html:/var/www/phpmyadmin:ro
+        - phpmyadmin_html:/var/www/phpmyadmin
