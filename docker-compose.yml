@@ -8,7 +8,6 @@ volumes:
   snipe_html:
   phpmyadmin_html:
   phpmyadmin_db:
-  portainer_data:
   mysql_socket:
 
 services:
@@ -101,23 +100,6 @@ services:
       PMA_DB: ${PMA_DB}
       PMA_USER: ${PMA_USER}
       PMA_PASSWORD: ${PMA_PASS}
-
-#===============================================================================#
-# Container Management Application                                              #
-#===============================================================================#
-  portainer:
-    image: portainer/portainer
-    container_name: portainer
-    restart: unless-stopped
-    ports:
-      - "9000:9000"
-    command: -H unix:///var/run/docker.sock
-#    command: --admin-password "$$2y$$05$$arC5e4UbRPxfR68jaFnAAe1aL7C1U03pqfyQh49/9lB9lqFxLfBqS"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data
-    networks:
-      - snipe
 
 #===============================================================================#
 # PHPMyAdmin Build Container                                                    #
