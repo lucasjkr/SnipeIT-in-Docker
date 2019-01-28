@@ -89,7 +89,7 @@ $cfg['TempDir'] = '/tmp/';
  * button in browse mode or not.
  * default = false
  */
-//$cfg['ShowAll'] = true;
+$cfg['ShowAll'] = true;
 
 /**
  * Number of rows displayed when browsing a result set. If the result
@@ -116,8 +116,7 @@ $cfg['TempDir'] = '/tmp/';
  * uncomment the desired line:
  * default = 'en'
  */
-//$cfg['DefaultLang'] = 'en';
-//$cfg['DefaultLang'] = 'de';
+$cfg['DefaultLang'] = 'en';
 
 /**
  * How many columns should be used for table display of a database?
@@ -133,13 +132,13 @@ $cfg['TempDir'] = '/tmp/';
  * This requires configuration storage enabled, see above.
  * default = false
  */
-//$cfg['QueryHistoryDB'] = true;
+$cfg['QueryHistoryDB'] = true;
 
 /**
  * When using DB-based query history, how many entries should be kept?
  * default = 25
  */
-//$cfg['QueryHistoryMax'] = 100;
+$cfg['QueryHistoryMax'] = 100;
 
 /**
  * Whether or not to query the user before sending the error report to
