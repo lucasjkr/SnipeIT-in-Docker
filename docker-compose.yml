@@ -7,6 +7,7 @@ volumes:
   snipe_mysql:
   snipe_html:
   phpmyadmin_html:
+  phpmyadmin_db:
   portainer_data:
   mysql_socket:
 
@@ -97,6 +98,9 @@ services:
       DB_DATABASE: ${SNIPE_DB}
       DB_USERNAME: ${SNIPE_DB_USER}
       DB_PASSWORD: ${SNIPE_DB_PASS}
+      PMA_DB: ${PMA_DB}
+      PMA_USER: ${PMA_USER}
+      PMA_PASSWORD: ${PMA_PASS}
 
 #===============================================================================#
 # Container Management Application                                              #
@@ -127,3 +131,25 @@ services:
         dockerfile: Dockerfile
       volumes:
         - phpmyadmin_html:/var/www/phpmyadmin
+
+#===============================================================================#
+# PHPMyAdmin Database                                                           #
+# This PMA needs its own database to store data in; i thought to create a       #
+# separate table within the Snipe database, but think a separate container      #
+# is cleaner.                                                                   #
+#===============================================================================#
+
+  phpmyadmin-database:
+    container_name: pmadb
+    image: mariadb:10.3.8-bionic
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${PMA_DB}
+      MYSQL_USER: ${PMA_USER}
+      MYSQL_PASSWORD: ${PMA_PASS}
+    networks:
+      - snipe
+    volumes:
+      - ./snipe-phpmyadmin/sql/:/docker-entrypoint-initdb.d/:ro
+      - phpmyadmin_db:/var/lib/mysql
