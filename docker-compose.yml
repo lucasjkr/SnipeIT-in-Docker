@@ -150,6 +150,7 @@ services:
       MYSQL_PASSWORD: ${PMA_PASS}
     networks:
       - snipe
+    mem_limit: 110m
     volumes:
       - ./snipe-phpmyadmin/sql/:/docker-entrypoint-initdb.d/:ro
       - phpmyadmin_db:/var/lib/mysql
