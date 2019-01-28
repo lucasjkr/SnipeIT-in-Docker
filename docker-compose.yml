@@ -6,7 +6,10 @@ networks:
 volumes:
   snipe_mysql:
   snipe_html:
+  phpmyadmin_html:
+  phpmyadmin_db:
   portainer_data:
+  mysql_socket:
 
 services:
 #===============================================================================#
@@ -28,6 +31,9 @@ services:
     volumes:
       - snipe_html:/var/www/html
 
+#===============================================================================#
+# MariaDB                                                                       #
+#===============================================================================#
   snipedb:
     container_name: snipedb
     image: mariadb:10.3.8-bionic
@@ -41,8 +47,13 @@ services:
       - snipe
     volumes:
       - ./snipedb/sql/:/docker-entrypoint-initdb.d/:ro
+      - mysql_socket:/var/run/mysqld
       - snipe_mysql:/var/lib/mysql
 
+#===============================================================================#
+# NGinx to serve the snipe website at https://yourhost/                         #
+# and phpmyadmin at https://yourhost/pma                                        #
+#===============================================================================#
   nginx:
     container_name: nginx
     build:
@@ -55,6 +66,7 @@ services:
     volumes:
       - ./opt/:/etc/nginx/certs:ro
       - snipe_html:/var/www/html
+      - phpmyadmin_html:/var/www/phpmyadmin
     ports:
       - ${NGINX_HTTP_PORT}:${NGINX_HTTP_PORT}
       - ${NGINX_HTTPS_PORT}:${NGINX_HTTPS_PORT}
@@ -76,6 +88,8 @@ services:
       - snipedb
     volumes:
       - snipe_html:/var/www/html
+      - phpmyadmin_html:/var/www/phpmyadmin:ro
+      - mysql_socket:/var/run/mysqld
     environment:
       APP_URL: https://${DNS_NAME}/
       DB_CONNECTION: mysql
@@ -84,9 +98,12 @@ services:
       DB_DATABASE: ${SNIPE_DB}
       DB_USERNAME: ${SNIPE_DB_USER}
       DB_PASSWORD: ${SNIPE_DB_PASS}
+      PMA_DB: ${PMA_DB}
+      PMA_USER: ${PMA_USER}
+      PMA_PASSWORD: ${PMA_PASS}
 
 #===============================================================================#
-# Portainer Container Management Application                                    #
+# Container Management Application                                              #
 #===============================================================================#
   portainer:
     image: portainer/portainer
@@ -94,10 +111,46 @@ services:
     restart: unless-stopped
     ports:
       - "9000:9000"
-#    command: -H unix:///var/run/docker.sock
-    command: --admin-password "$$2y$$05$$arC5e4UbRPxfR68jaFnAAe1aL7C1U03pqfyQh49/9lB9lqFxLfBqS"
+    command: -H unix:///var/run/docker.sock
+#    command: --admin-password "$$2y$$05$$arC5e4UbRPxfR68jaFnAAe1aL7C1U03pqfyQh49/9lB9lqFxLfBqS"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
     networks:
       - snipe
+
+#===============================================================================#
+# PHPMyAdmin Build Container                                                    #
+# This container runs once just to download and install phpmyadmin and its      #
+# dependencies - it can be combined with the snipe container eventually         #
+#===============================================================================#
+  phpmyadmin:
+      container_name: phpmyadmin
+      build:
+        context: phpmyadmin/
+        dockerfile: Dockerfile
+      volumes:
+        - phpmyadmin_html:/var/www/phpmyadmin
+
+#===============================================================================#
+# PHPMyAdmin Database                                                           #
+# This PMA needs its own database to store data in; i thought to create a       #
+# separate table within the Snipe database, but think a separate container      #
+# is cleaner.                                                                   #
+#===============================================================================#
+
+  phpmyadmin-database:
+    container_name: pmadb
+    image: mariadb:10.3.8-bionic
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${PMA_DB}
+      MYSQL_USER: ${PMA_USER}
+      MYSQL_PASSWORD: ${PMA_PASS}
+    networks:
+      - snipe
+    mem_limit: 110m
+    volumes:
+      - ./snipe-phpmyadmin/sql/:/docker-entrypoint-initdb.d/:ro
+      - phpmyadmin_db:/var/lib/mysql

@@ -20,6 +20,8 @@ RUN apt-get update && \
     && docker-php-ext-install gd \
     && docker-php-ext-install bcmath \
     && docker-php-ext-install zip \
+# Adding MySQLi extension for PhpMyadmin to work
+    && docker-php-ext-install mysqli \
 # Memory Limit
     && echo "memory_limit=2048M" > $PHP_INI_DIR/conf.d/memory-limit.ini \
     && echo "max_execution_time=900" >> $PHP_INI_DIR/conf.d/memory-limit.ini \
