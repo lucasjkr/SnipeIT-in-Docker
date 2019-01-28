@@ -19,10 +19,10 @@ RUN apt-get update \
     && php -r "unlink('composer-setup.php');" \
     && mkdir /var/www/ \
     && cd /var/www/ \
-    && wget https://github.com/phpmyadmin/phpmyadmin/archive/RELEASE_4_8_4.zip \
-    && unzip RELEASE_4_8_4.zip \
+    && wget https://github.com/phpmyadmin/phpmyadmin/archive/RELEASE_4_8_5.zip \
+    && unzip RELEASE_4_8_5.zip \
     && cd /var/www/ \
-    && mv phpmyadmin-RELEASE_4_8_4 phpmyadmin \
+    && mv phpmyadmin-RELEASE_4_8_5 phpmyadmin \
     && cd phpmyadmin \
     && composer install \
     && mv /root/config.inc.php config.inc.php \
