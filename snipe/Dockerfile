@@ -29,7 +29,7 @@ RUN apt-get update \
     && php -r "unlink('composer-setup.php');" \
 # Remove default HTML directory
     && rm -rf /var/www/html \
-    && git clone https://github.com/lucasjkr/snipe-it.git /var/www/html \
+    && git clone https://github.com/snipe/snipe-it.git /var/www/html \
 # Change to Snipe repository and continue building
     && cd  /var/www/html \
     && git checkout master \
