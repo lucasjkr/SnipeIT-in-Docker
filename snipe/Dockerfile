@@ -20,9 +20,6 @@ RUN apt-get update \
          php7.2-mysql \
          php7.2-xml \
          php7.2-zip \
-# Cleanup apt directories
-    && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/* \
 # Install composer
 # Not checking SHA signatures, even though maybe we should
     && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
@@ -50,4 +47,26 @@ RUN apt-get update \
 # of what is set in APP_ENV
     && mv /root/.env /var/www/html/.env \
     && php artisan key:generate \
-    && php artisan optimize
+    && php artisan optimize \
+# Cleanup everything
+    && rm /usr/local/bin/composer \
+    && apt-get remove -y \
+         php7.2-zip \
+         php7.2-xml \
+         php7.2-mysql \
+         php7.2-mbstring \
+         php7.2-gd \
+         php7.2-curl \
+         php7.2-common \
+         php7.2-cli \
+         php7.2-bcmath \
+         php7.2 \
+         git \
+         tzdata \
+         pwgen \
+         ca-certificates \
+         apt-transport-https \
+# Cleanup apt directories
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /root/.composer
