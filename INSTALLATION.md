@@ -20,7 +20,7 @@ Change to the SNIPE directory
 
     cd snipe
 
-Copy the example .env file, and make changes as needed. The only thing you HAVE to set is the DNS_NAME entry, this should be whatever name you added to your hosts file (or the URL if its a registered DNS name), but if intend to run HTTPS on a non-standard port, you should change it here.
+Copy the example .env file, and make changes as needed. The only thing you HAVE to set is the SNIPE_FQDN entry, this should be whatever name you added to your hosts file (or the URL if its a registered DNS name), but if intend to run HTTPS on a non-standard port, you should change it here.
 
     cp .env.example .env
 

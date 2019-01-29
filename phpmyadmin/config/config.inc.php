@@ -39,7 +39,7 @@ $cfg['Servers'][$i]['AllowNoPassword'] = false;
  */
 
 /* User used to manipulate with storage */
- $cfg['Servers'][$i]['controlhost'] = 'pmadb';
+ $cfg['Servers'][$i]['controlhost'] = 'snipe_maria_pma';
  $cfg['Servers'][$i]['controlport'] = '';
  $cfg['Servers'][$i]['controluser'] = getenv('PMA_USER');
  $cfg['Servers'][$i]['controlpass'] = getenv('PMA_PASSWORD');
