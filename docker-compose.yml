@@ -60,7 +60,7 @@ services:
       args:
         HTTP_PORT: ${NGINX_HTTP_PORT}
         HTTPS_PORT: ${NGINX_HTTPS_PORT}
-        DNS_NAME: ${DNS_NAME}
+        SNIPE_FQDN: ${SNIPE_FQDN}
     restart: unless-stopped
     volumes:
       - ./opt/:/etc/nginx/certs:ro
@@ -90,7 +90,7 @@ services:
       - phpmyadmin_html:/var/www/phpmyadmin:ro
       - mysql_socket:/var/run/mysqld
     environment:
-      APP_URL: https://${DNS_NAME}/
+      APP_URL: https://${SNIPE_FQDN}/
       DB_CONNECTION: mysql
       DB_HOST: snipedb
       DB_PORT: 3306
