@@ -4,17 +4,17 @@ networks:
     driver: bridge
 
 volumes:
-  snipe_mysql:
-  snipe_html:
-  phpmyadmin_html:
-  phpmyadmin_db:
-  mysql_socket:
+  snipe_app_html:
+  snipe_app_db:
+  snipe_pma_html:
+  snipe_pma_db:
+  snipe_mysql_socket:
 
 services:
 #===============================================================================#
 # Snipe-IT                                                                      #
 # This container simply builds the Laravel application and stores it in the     #
-# snipe_html docker volume, so the Nginx and PHP containers can access it       #
+# snipe_app_html docker volume, so the Nginx and PHP containers can access it   #
 #===============================================================================#
   snipe:
     container_name: snipeit
@@ -28,13 +28,13 @@ services:
     networks:
       - snipe
     volumes:
-      - snipe_html:/var/www/html
+      - snipe_app_html:/var/www/html
 
 #===============================================================================#
 # MariaDB                                                                       #
 #===============================================================================#
-  snipedb:
-    container_name: snipedb
+  snipe_mariadb:
+    container_name: snipe_mariadb
     image: mariadb:10.3.8-bionic
     restart: unless-stopped
     environment:
@@ -45,9 +45,9 @@ services:
     networks:
       - snipe
     volumes:
-      - ./snipedb/sql/:/docker-entrypoint-initdb.d/:ro
-      - mysql_socket:/var/run/mysqld
-      - snipe_mysql:/var/lib/mysql
+      - ./mariadb/sql/snipe/:/docker-entrypoint-initdb.d/:ro
+      - snipe_mysql_socket:/var/run/mysqld
+      - snipe_app_db:/var/lib/mysql
 
 #===============================================================================#
 # NGinx to serve the snipe website at https://yourhost/                         #
@@ -64,8 +64,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./opt/:/etc/nginx/certs:ro
-      - snipe_html:/var/www/html
-      - phpmyadmin_html:/var/www/phpmyadmin
+      - snipe_app_html:/var/www/html
+      - snipe_pma_html:/var/www/phpmyadmin
     ports:
       - ${NGINX_HTTP_PORT}:${NGINX_HTTP_PORT}
       - ${NGINX_HTTPS_PORT}:${NGINX_HTTPS_PORT}
@@ -73,7 +73,7 @@ services:
       - snipe
     depends_on:
       - php
-      - snipedb
+      - snipe_mariadb
 
   php:
     container_name: php
@@ -84,15 +84,15 @@ services:
     networks:
       - snipe
     links:
-      - snipedb
+      - snipe_mariadb
     volumes:
-      - snipe_html:/var/www/html
-      - phpmyadmin_html:/var/www/phpmyadmin:ro
-      - mysql_socket:/var/run/mysqld
+      - snipe_app_html:/var/www/html
+      - snipe_pma_html:/var/www/phpmyadmin:ro
+      - snipe_mysql_socket:/var/run/mysqld
     environment:
       APP_URL: https://${SNIPE_FQDN}/
       DB_CONNECTION: mysql
-      DB_HOST: snipedb
+      DB_HOST: snipe_mariadb
       DB_PORT: 3306
       DB_DATABASE: ${SNIPE_DB}
       DB_USERNAME: ${SNIPE_DB_USER}
@@ -112,7 +112,7 @@ services:
         context: phpmyadmin/
         dockerfile: Dockerfile
       volumes:
-        - phpmyadmin_html:/var/www/phpmyadmin
+        - snipe_pma_html:/var/www/phpmyadmin
 
 #===============================================================================#
 # PHPMyAdmin Database                                                           #
@@ -134,5 +134,5 @@ services:
       - snipe
     mem_limit: 110m
     volumes:
-      - ./snipe-phpmyadmin/sql/:/docker-entrypoint-initdb.d/:ro
-      - phpmyadmin_db:/var/lib/mysql
+      - ./mariadb/sql/snipe/:/docker-entrypoint-initdb.d/:ro
+      - snipe_pma_db:/var/lib/mysql
