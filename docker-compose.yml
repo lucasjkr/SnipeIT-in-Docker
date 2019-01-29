@@ -16,8 +16,8 @@ services:
 # This container simply builds the Laravel application and stores it in the     #
 # snipe_app_html docker volume, so the Nginx and PHP containers can access it   #
 #===============================================================================#
-  snipe:
-    container_name: snipeit
+  snipe_app_build:
+    container_name: snipe_app_build
     build:
       context: snipe/
     environment:
@@ -31,10 +31,23 @@ services:
       - snipe_app_html:/var/www/html
 
 #===============================================================================#
+# PHPMyAdmin Build Container                                                    #
+# This container runs once just to download and install phpmyadmin and its      #
+# dependencies - it can be combined with the snipe container eventually         #
+#===============================================================================#
+  snipe_pma_build:
+    container_name: snipe_pma_build
+    build:
+      context: phpmyadmin/
+      dockerfile: Dockerfile
+    volumes:
+      - snipe_pma_html:/var/www/phpmyadmin
+
+#===============================================================================#
 # MariaDB                                                                       #
 #===============================================================================#
-  snipe_mariadb:
-    container_name: snipe_mariadb
+  snipe_maria_app:
+    container_name: snipe_maria_app
     image: mariadb:10.3.8-bionic
     restart: unless-stopped
     environment:
@@ -50,79 +63,13 @@ services:
       - snipe_app_db:/var/lib/mysql
 
 #===============================================================================#
-# NGinx to serve the snipe website at https://yourhost/                         #
-# and phpmyadmin at https://yourhost/pma                                        #
-#===============================================================================#
-  nginx:
-    container_name: nginx
-    build:
-      context: nginx/
-      args:
-        HTTP_PORT: ${NGINX_HTTP_PORT}
-        HTTPS_PORT: ${NGINX_HTTPS_PORT}
-        SNIPE_FQDN: ${SNIPE_FQDN}
-    restart: unless-stopped
-    volumes:
-      - ./opt/:/etc/nginx/certs:ro
-      - snipe_app_html:/var/www/html
-      - snipe_pma_html:/var/www/phpmyadmin
-    ports:
-      - ${NGINX_HTTP_PORT}:${NGINX_HTTP_PORT}
-      - ${NGINX_HTTPS_PORT}:${NGINX_HTTPS_PORT}
-    networks:
-      - snipe
-    depends_on:
-      - php
-      - snipe_mariadb
-
-  php:
-    container_name: php
-    build:
-      context: php/
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    networks:
-      - snipe
-    links:
-      - snipe_mariadb
-    volumes:
-      - snipe_app_html:/var/www/html
-      - snipe_pma_html:/var/www/phpmyadmin:ro
-      - snipe_mysql_socket:/var/run/mysqld
-    environment:
-      APP_URL: https://${SNIPE_FQDN}/
-      DB_CONNECTION: mysql
-      DB_HOST: snipe_mariadb
-      DB_PORT: 3306
-      DB_DATABASE: ${SNIPE_DB}
-      DB_USERNAME: ${SNIPE_DB_USER}
-      DB_PASSWORD: ${SNIPE_DB_PASS}
-      PMA_DB: ${PMA_DB}
-      PMA_USER: ${PMA_USER}
-      PMA_PASSWORD: ${PMA_PASS}
-
-#===============================================================================#
-# PHPMyAdmin Build Container                                                    #
-# This container runs once just to download and install phpmyadmin and its      #
-# dependencies - it can be combined with the snipe container eventually         #
-#===============================================================================#
-  phpmyadmin:
-      container_name: phpmyadmin
-      build:
-        context: phpmyadmin/
-        dockerfile: Dockerfile
-      volumes:
-        - snipe_pma_html:/var/www/phpmyadmin
-
-#===============================================================================#
 # PHPMyAdmin Database                                                           #
 # This PMA needs its own database to store data in; i thought to create a       #
 # separate table within the Snipe database, but think a separate container      #
 # is cleaner.                                                                   #
 #===============================================================================#
-
-  phpmyadmin-database:
-    container_name: pmadb
+  snipe_maria_pma:
+    container_name: snipe_maria_pma
     image: mariadb:10.3.8-bionic
     restart: unless-stopped
     environment:
@@ -134,5 +81,63 @@ services:
       - snipe
     mem_limit: 110m
     volumes:
-      - ./mariadb/sql/snipe/:/docker-entrypoint-initdb.d/:ro
+      - ./mariadb/sql/pma/:/docker-entrypoint-initdb.d/:ro
       - snipe_pma_db:/var/lib/mysql
+
+#===============================================================================#
+# NGinx to serve the snipe website at https://yourhost/                         #
+# and phpmyadmin at https://yourhost/pma                                        #
+#===============================================================================#
+  snipe_nginx:
+    container_name: snipe_nginx
+    build:
+      context: nginx/
+      args:
+        HTTP_PORT:  ${NGINX_HTTP_PORT}
+        HTTPS_PORT: ${NGINX_HTTPS_PORT}
+        SNIPE_FQDN: ${SNIPE_FQDN}
+    restart: unless-stopped
+    volumes:
+      - snipe_app_html:/var/www/html
+      - snipe_pma_html:/var/www/phpmyadmin
+      - ./opt/:/etc/nginx/certs:ro
+    ports:
+      - ${NGINX_HTTP_PORT}:${NGINX_HTTP_PORT}
+      - ${NGINX_HTTPS_PORT}:${NGINX_HTTPS_PORT}
+    networks:
+      - snipe
+    depends_on:
+      - snipe_php
+      - snipe_maria_app
+      - snipe_maria_pma
+
+#===============================================================================#
+# PHP Container                                                                 #
+# shared by Snipe and PHPMyAdmin                                                #
+#===============================================================================#
+  snipe_php:
+    container_name: snipe_php
+    build:
+      context: php/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - snipe
+#    links:
+#      - snipe_mariadb
+    volumes:
+      - snipe_app_html:/var/www/html
+      - snipe_pma_html:/var/www/phpmyadmin:ro
+      - snipe_mysql_socket:/var/run/mysqld
+    environment:
+      APP_URL: https://${SNIPE_FQDN}/
+      DB_CONNECTION: mysql
+      DB_HOST: snipe_maria_app
+      DB_PORT: 3306
+      DB_DATABASE: ${SNIPE_DB}
+      DB_USERNAME: ${SNIPE_DB_USER}
+      DB_PASSWORD: ${SNIPE_DB_PASS}
+      PMA_DB: ${PMA_DB}
+      PMA_USER: ${PMA_USER}
+      PMA_PASSWORD: ${PMA_PASS}
+
