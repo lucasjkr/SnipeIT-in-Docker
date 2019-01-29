@@ -34,7 +34,7 @@ RUN apt-get update \
     && cd  /var/www/html \
     && git checkout master \
     && composer install \
-    && rm -rf /root/.composer/cache/* \
+    && rm -rf /root/.composer/* \
 # Make required directories writable
     && chmod -R 777 /var/www/html/storage \
     && chmod -R 777 /var/www/html/storage/app \
@@ -66,7 +66,6 @@ RUN apt-get update \
          ca-certificates \
          apt-transport-https \
     && rm /usr/local/bin/composer \
-    && rm -rf /root/.composer \
 # Cleanup apt directories
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
