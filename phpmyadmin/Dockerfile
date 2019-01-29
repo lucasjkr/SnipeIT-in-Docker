@@ -6,10 +6,20 @@ RUN apt-get update \
          apt-transport-https ca-certificates pwgen tzdata \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-         wget git zip unzip php7.2 php7.2-curl php7.2-common php7.2-cli php7.2-mysql php7.2-mbstring php7.2-xml php7.2-zip php7.2-bcmath php7.2-gd \
-# Cleanup apt directories
-    && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/* \
+         git \
+         wget \
+         unzip \
+         zip \
+         php7.2 \
+         php7.2-bcmath \
+         php7.2-common \
+         php7.2-cli \
+         php7.2-curl \
+         php7.2-gd \
+         php7.2-mbstring \
+         php7.2-mysql \
+         php7.2-xml \
+         php7.2-zip \
 # Install composer
 # Not checking SHA signatures, even though maybe we should
     && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
@@ -21,9 +31,34 @@ RUN apt-get update \
     && cd /var/www/ \
     && wget https://github.com/phpmyadmin/phpmyadmin/archive/RELEASE_4_8_5.zip \
     && unzip RELEASE_4_8_5.zip \
-    && cd /var/www/ \
     && mv phpmyadmin-RELEASE_4_8_5 phpmyadmin \
     && cd phpmyadmin \
     && composer install \
     && mv /root/config.inc.php config.inc.php \
-    && chmod 444 config.inc.php
+    && chmod 444 config.inc.php \
+# Cleanup everything
+    && rm /var/www/RELEASE_4_8_5.zip \
+    && apt-get remove -y \
+         php7.2-zip \
+         php7.2-xml \
+         php7.2-mysql \
+         php7.2-mbstring \
+         php7.2-gd \
+         php7.2-curl \
+         php7.2-common \
+         php7.2-cli \
+         php7.2-bcmath \
+         php7.2 \
+         zip \
+         wget \
+         unzip \
+         tzdata \
+         pwgen \
+         git \
+         ca-certificates \
+         apt-transport-https \
+    && rm /usr/local/bin/composer \
+    && rm -rf /root/.composer \
+# Cleanup apt directories
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
