@@ -48,8 +48,7 @@ RUN apt-get update \
     && mv /root/.env /var/www/html/.env \
     && php artisan key:generate \
     && php artisan optimize \
-# Cleanup everything
-    && rm /usr/local/bin/composer \
+# Cleanup
     && apt-get remove -y \
          php7.2-zip \
          php7.2-xml \
@@ -66,7 +65,8 @@ RUN apt-get update \
          pwgen \
          ca-certificates \
          apt-transport-https \
+    && rm /usr/local/bin/composer \
+    && rm -rf /root/.composer \
 # Cleanup apt directories
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /root/.composer
