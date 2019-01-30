@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:18.04 as build
 # Copy env file into the container
 COPY config/snipe.env /root/.env
 RUN apt-get update \
@@ -34,7 +34,6 @@ RUN apt-get update \
     && cd  /var/www/html \
     && git checkout master \
     && composer install \
-    && rm -rf /root/.composer/* \
 # Make required directories writable
     && chmod -R 777 /var/www/html/storage \
     && chmod -R 777 /var/www/html/storage/app \
@@ -42,13 +41,9 @@ RUN apt-get update \
     && chmod -R 777 /var/www/html/storage/logs \
     && chmod -R 777 /var/www/html/bootstrap/cache \
     && chmod -R 777 /var/www/html/public/uploads \
-# Creating APP_KEY fails currently, because the .env file says the site is in production
-# looking for a solution that would generate the APP_KEY only if it's not set, regardless
-# of what is set in APP_ENV
     && mv /root/.env /var/www/html/.env \
-    && php artisan key:generate \
     && php artisan optimize \
-# Cleanup
+# Cleanup to shrink the size of the build image
     && apt-get remove -y \
          php7.2-zip \
          php7.2-xml \
@@ -66,6 +61,8 @@ RUN apt-get update \
          ca-certificates \
          apt-transport-https \
     && rm /usr/local/bin/composer \
-# Cleanup apt directories
+    && rm -rf /root/.composer \
     && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/apt/lists/*
+FROM alpine:3.8
+COPY --from=build /var/www/html /var/www/html
