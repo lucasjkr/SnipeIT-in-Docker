@@ -1,4 +1,5 @@
-FROM ubuntu:18.04
+FROM ubuntu:18.04 as build
+#FROM ubuntu:18.04
 # Copy env file into the container
 COPY config/snipe.env /root/.env
 RUN apt-get update \
@@ -47,25 +48,27 @@ RUN apt-get update \
 # of what is set in APP_ENV
     && mv /root/.env /var/www/html/.env \
     && php artisan key:generate \
-    && php artisan optimize \
+    && php artisan optimize
 # Cleanup
-    && apt-get remove -y \
-         php7.2-zip \
-         php7.2-xml \
-         php7.2-mysql \
-         php7.2-mbstring \
-         php7.2-gd \
-         php7.2-curl \
-         php7.2-common \
-         php7.2-cli \
-         php7.2-bcmath \
-         php7.2 \
-         git \
-         tzdata \
-         pwgen \
-         ca-certificates \
-         apt-transport-https \
-    && rm /usr/local/bin/composer \
-# Cleanup apt directories
-    && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/* \
+#    && apt-get remove -y \
+#         php7.2-zip \
+#         php7.2-xml \
+#         php7.2-mysql \
+#         php7.2-mbstring \
+#         php7.2-gd \
+#         php7.2-curl \
+#         php7.2-common \
+#         php7.2-cli \
+#         php7.2-bcmath \
+#         php7.2 \
+#         git \
+#         tzdata \
+#         pwgen \
+#         ca-certificates \
+#         apt-transport-https \
+#    && rm /usr/local/bin/composer \
+## Cleanup apt directories
+#    && apt-get autoremove -y \
+#    && rm -rf /var/lib/apt/lists/*
+FROM ubuntu:18.04
+COPY --from=build /var/www/html /var/www/html
