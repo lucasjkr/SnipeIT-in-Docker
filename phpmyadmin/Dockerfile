@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:18.04 as build
 # Copy env file into the container
 COPY config/config.inc.php /root/config.inc.php
 RUN apt-get update \
@@ -36,7 +36,7 @@ RUN apt-get update \
     && composer install \
     && mv /root/config.inc.php config.inc.php \
     && chmod 444 config.inc.php \
-# Cleanup everything
+# Cleanup to shrink the size of the build image
     && rm /var/www/RELEASE_4_8_5.zip \
     && apt-get remove -y \
          php7.2-zip \
@@ -59,6 +59,8 @@ RUN apt-get update \
          apt-transport-https \
     && rm /usr/local/bin/composer \
     && rm -rf /root/.composer \
-# Cleanup apt directories
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
+# Create new final image
+FROM alpine:3.8
+COPY --from=build /var/www/phpmyadmin /var/www/phpmyadmin
