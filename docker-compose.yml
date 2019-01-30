@@ -106,8 +106,6 @@ services:
       - ${NGINX_HTTPS_PORT}:${NGINX_HTTPS_PORT}
     networks:
       - snipe
-    depends_on:
-      - snipe_php
 
 #===============================================================================#
 # PHP Container                                                                 #
@@ -122,9 +120,9 @@ services:
     networks:
       - snipe
     volumes:
-      - snipe_app_html:/var/www/html
-      - snipe_pma_html:/var/www/phpmyadmin:ro
       - snipe_mysql_socket:/var/run/mysqld
+    volumes_from:
+      - snipe_nginx
     environment:
       APP_URL: https://${SNIPE_FQDN}/
       DB_CONNECTION: mysql
@@ -138,4 +136,5 @@ services:
       PMA_PASSWORD: ${PMA_PASS}
     depends_on:
       - snipe_maria_app
+      - snipe_nginx
       - snipe_maria_pma
