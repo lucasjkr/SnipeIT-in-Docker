@@ -14,7 +14,7 @@
  * This is needed for cookie based authentication to encrypt password in
  * cookie. Needs to be 32 chars long.
  */
-$cfg['blowfish_secret'] = 'RandomStringGoesInHereNeedsToBeLonger'; /* YOU MUST FILL IN THIS FOR COOKIE AUTH! */
+$cfg['blowfish_secret'] = getenv('PMA_SECRET');
 
 /**
  * Servers configuration
@@ -29,7 +29,7 @@ $i++;
 $cfg['Servers'][$i]['auth_type'] = 'cookie';
 
 /* Server parameters */
-$cfg['Servers'][$i]['host'] = 'localhost';   # change to 'snipedb' if you want to connect over TCP instead of socket
+$cfg['Servers'][$i]['host'] = 'localhost';
 $cfg['Servers'][$i]['socket'] = '/var/run/mysqld/mysqld.sock';
 $cfg['Servers'][$i]['compress'] = false;
 $cfg['Servers'][$i]['AllowNoPassword'] = false;
@@ -42,7 +42,7 @@ $cfg['Servers'][$i]['AllowNoPassword'] = false;
  $cfg['Servers'][$i]['controlhost'] = 'snipe_maria_pma';
  $cfg['Servers'][$i]['controlport'] = '';
  $cfg['Servers'][$i]['controluser'] = getenv('PMA_USER');
- $cfg['Servers'][$i]['controlpass'] = getenv('PMA_PASSWORD');
+ $cfg['Servers'][$i]['controlpass'] = getenv('PMA_PASS');
 
 /* Storage database and tables */
  $cfg['Servers'][$i]['pmadb'] = getenv('PMA_DB');
