@@ -1,51 +1,87 @@
 #SNIPE-IT in Docker
 
-## Setup
+## Requirements
 I have only tested on Ubuntu Server 18.04 with:
 
 - The version of Docker included with the distribution
 - The latest versions of Docker and Docker-Compose from Docker
 
-The only other host setup item is to open up the right firewall ports on the host.
- 
-From the client (which can be the same machine as the host), you'll need to add an entry to your hosts file, if the name isn't registered in DNS (e.g. `snipe.docker.local`)
-
 ## Installation
-
-Clone my repository
+Clone the Github repository
 
     git clone https://github.com/lucasjkr/SnipeIT-in-Docker snipe
-
-Change to the SNIPE directory
-
     cd snipe
-
-Copy the example .env file, and make changes as needed. The only thing you HAVE to set is the SNIPE_FQDN entry, this should be whatever name you added to your hosts file (or the URL if its a registered DNS name), but if intend to run HTTPS on a non-standard port, you should change it here.
-
     cp .env.example .env
 
-Generate self-signed SSL keys
+Edit the .env file to match your environment (see below).
 
-    bash scripts/generate-ssl-keys.sh
+If you already have SSL keys, copy them into the `opt` directory, named:
 
-Launch SNIPE
+* Certificate: `nginx-cert.pem`
+* Keyfile: `nginx-key.pem`
 
-    docker-compose up
+Otherwise run `bash scripts/generate-ssl-keys.sh` to make self-signed keys.
 
-## Notes
+    docker-compose up -d
+    docker exec snipe_php php artisan key:generate --env=local`
+    bash update.sh
+    
+After the update is complete, you can now login to your services at:
 
-A default superuser has already been created, username/password are `admin`/`password`
+* Snipe: `https://<<your-url>>/`
+* PhpMyAdmin: `https://<<your-url>>/pma`
 
-If you're using self-signed SSL keys, you'll need to click through the warning your browser throws up.
+## Editing your .env file
 
-The FIRST time you login, it will say "whoops! something went wrong", but if you reload the page, all will be fine.
+Your default .env file looks like this:
 
-Also, the APP_KEY is not going to be unique; it's within 
+    # The URL of your site
+    SNIPE_FQDN=my.site.com
+    
+    # NGinx ports
+    NGINX_HTTP_PORT=80
+    NGINX_HTTPS_PORT=443
+    
+    # Password for the root MariaDB user (both databases)
+    MYSQL_ROOT_PASSWORD=mysql_root_pass
+    
+    # Credentials for Snipe's database
+    SNIPE_DB=snipe
+    SNIPE_DB_USER=snipeuser
+    SNIPE_DB_PASS=snipepass
+    
+    # Credentials to database that PhpMyAdmin uses for housekeeping
+    PMA_DB=phpmyadmin
+    PMA_USER=pmauser
+    PMA_PASS=pmapass
+    PMA_SECRET=012345678901234567890123456789012  # Must be 32 Characters
 
-There might be some directories still that don't have proper write permissions. Let me know.
+While this should be sufficient for you to proceed, it's best that you make edits as follows:
 
-## Final Word
+`SNIPE_FQDN:` Set the base URL of your site here - both Nginx and Snipe use this information
 
-This was rapidly made for testing purposes, please don't judge me! 
+`NGINX_HTTP_PORT:` All port 80 does is redirect to Snipe's SSL port; but if you want the redirect to be on another port, change it here
 
-I'll do some cleanup myself, but if anyone else wants to contribute, feel free to pitch in!
+`NGINX_HTTPs_PORT:`  This is the HTTPS port that Snipe will be accessible over
+
+`MYSQL_ROOT_PASSWORD:` You won't need this for day to day, but if you ever need to log into MariaDB as the root user, this will be your password
+
+`SNIPE_DB`, `SNIPE_DB_USER` and `SNIPE_DB_PASS:` credentials used by Laravel for accessing database; you can also access through PhpMyAdmin
+
+`PMA_DB`, `PMA_USER` and `PMA_PASS`: credentials that PhpMyadmin uses to store its own recordkeeping data.
+
+`PMA_SECRET` used my PhpMyAdmin to for setting/generating cookies
+
+
+## Updates
+
+Periodically, the Snipe developers update their code - to accomodate this, you can run `update.sh` - this:
+1. puts the app in offline mode
+2. downloads any new code from Github
+3. updates composer dependencies
+4. runs any new database migrations
+5. brings the application back online
+
+# Final word
+
+This is by no means the authoritative source for anything. I reserve the right to make changes that could potentially break things. In particular, watch the `.env.example` file for changes, as well as this document.
